@@ -1,4 +1,4 @@
-import { number, object, string, TypeOf } from "zod";
+import { object, string, TypeOf } from "zod";
 
 /** Creating new user schema */
 export const createUserSchema = object({

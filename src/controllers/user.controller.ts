@@ -30,7 +30,7 @@ async function editUserHanlder(
   req: Request<{}, {}, EditUser["body"]>,
   res: Response
 ) {
-  const { user_uuid } = res.locals;
+  const { user_uuid } = res.locals.user;
 
   try {
     //TODO: do fn

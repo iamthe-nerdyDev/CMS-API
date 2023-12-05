@@ -9,6 +9,7 @@ import {
   getUserSchema,
   resetPasswordSchema,
 } from "../schema/user.schema";
+import protectRoute from "../middleware/protectRoute";
 
 const router = express.Router();
 
@@ -21,11 +22,16 @@ router.post(
   validate(createUserSchema),
   controller.createUserHanlder
 );
-router.put("/:user_uuid", validate(editUserSchema), controller.editUserHanlder);
+
+router.put(
+  "/edit-user",
+  [protectRoute, validate(editUserSchema)],
+  controller.editUserHanlder
+);
 
 router.patch(
   "/change-password",
-  validate(changePasswordSchema),
+  [protectRoute, validate(changePasswordSchema)],
   controller.changePasswordHanlder
 );
 
