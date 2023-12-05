@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import passportAuth from "./passport";
 
 function createServer() {
   const app = express();
@@ -22,6 +23,8 @@ function createServer() {
       ],
     })
   );
+
+  passportAuth.initPassport(app); //to initialize passport auth
 
   app.use((_, res) => {
     return res.status(500).send("Oops! Something is not right");

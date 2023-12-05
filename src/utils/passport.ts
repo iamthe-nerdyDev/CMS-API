@@ -7,7 +7,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 import { config } from "../config";
 
-export default function initPassport(app: Express) {
+function initPassport(app: Express) {
   app.use(passport.initialize());
 
   //#ensuring that facebook clientID is passed
@@ -153,3 +153,5 @@ export default function initPassport(app: Express) {
     )
   );
 }
+
+export default { initPassport };
