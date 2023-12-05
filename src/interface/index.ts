@@ -5,7 +5,7 @@ export interface IConfig {
   server: {
     port: number;
   };
-  OAuth: {
+  passport: {
     facebook: {
       clientID?: string;
       clientSecret?: string;
@@ -23,4 +23,6 @@ export interface IConfig {
   refreshTokenToLive: string;
   accessTokenToLive: string;
   jwt_secret: string;
+  base_url: string;
+  client_url: string;
 }

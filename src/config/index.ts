@@ -20,7 +20,7 @@ const db = mysql
 export const config: IConfig = {
   db,
   server: { port: SERVER_PORT },
-  OAuth: {
+  passport: {
     facebook: {
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
@@ -38,4 +38,6 @@ export const config: IConfig = {
   refreshTokenToLive: "1y",
   accessTokenToLive: "5m",
   jwt_secret: process.env.JWT_SECRET_TOKEN || "xxxx-test-xxxx",
+  base_url: process.env.BASE_SERVER_URL || `http://localhost:${SERVER_PORT}`,
+  client_url: process.env.BASE_CLIENT_URL || "",
 };
