@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import mysql from "mysql2";
 import { IConfig } from "../interface";
 
 dotenv.config();
@@ -7,7 +8,17 @@ const SERVER_PORT = process.env.SERVER_PORT
   ? parseInt(process.env.SERVER_PORT)
   : 1337;
 
+const db = mysql
+  .createPool({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABSE,
+  })
+  .promise();
+
 export const config: IConfig = {
+  db,
   server: { port: SERVER_PORT },
   OAuth: {
     facebook: {
