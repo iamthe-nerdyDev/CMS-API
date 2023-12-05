@@ -55,14 +55,6 @@ export const getUserSchema = object({
   }),
 });
 
-/** Get multiple users schema */
-export const getUsersSchema = object({
-  query: object({
-    limit: number({ required_error: "Limit is required" }),
-    page: number({ required_error: "Page is required" }),
-  }),
-});
-
 /** Forgot password schema */
 export const forgotPasswordSchema = object({
   params: object({
@@ -97,6 +89,5 @@ export type CreateUser = TypeOf<typeof createUserSchema>;
 export type EditUser = TypeOf<typeof editUserSchema>;
 export type ChangePassword = TypeOf<typeof changePasswordSchema>;
 export type GetUser = TypeOf<typeof getUserSchema>;
-export type GetUsers = TypeOf<typeof getUsersSchema>;
 export type ForgotPassword = TypeOf<typeof forgotPasswordSchema>;
 export type ResetPassword = TypeOf<typeof resetPasswordSchema>;

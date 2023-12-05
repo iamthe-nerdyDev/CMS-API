@@ -5,18 +5,17 @@ import {
   EditUser,
   ForgotPassword,
   GetUser,
-  GetUsers,
   ResetPassword,
 } from "../schema/user.schema";
 import log from "../utils/logger";
+import { createUser } from "../services/user.service";
 
 async function createUserHanlder(
   req: Request<{}, {}, CreateUser["body"]>,
   res: Response
 ) {
   try {
-    //TODO: do fn
-    //const user = await createUser(req.body);
+    const user = await createUser(req.body);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -65,10 +64,7 @@ async function getUserHanlder(req: Request<GetUser["params"]>, res: Response) {
   }
 }
 
-async function getUsersHanlder(
-  req: Request<{}, {}, {}, GetUsers["query"]>,
-  res: Response
-) {
+async function getUsersHanlder(req: Request, res: Response) {
   const { limit, page } = req.query;
 
   try {
