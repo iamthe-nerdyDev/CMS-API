@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import passportAuth from "./passport";
 import routes from "./router";
+import deserializeUser from "../middleware/deserializeUser";
 
 function createServer() {
   const app = express();
@@ -12,7 +13,7 @@ function createServer() {
   app.use(
     cors({
       origin: "*",
-      methods: ["GET", "POST", "PUT", "DELETE"],
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
       allowedHeaders: [
         "Origin",
         "X-Requested-With",
@@ -24,6 +25,8 @@ function createServer() {
       ],
     })
   );
+
+  app.use(deserializeUser); //to deserialize the user..
 
   passportAuth.initPassport(app); //to initialize passport auth
 
