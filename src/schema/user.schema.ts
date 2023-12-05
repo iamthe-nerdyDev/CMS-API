@@ -1,4 +1,4 @@
-import { object, string, TypeOf } from "zod";
+import { number, object, string, TypeOf } from "zod";
 
 /** Creating new user schema */
 export const createUserSchema = object({
@@ -22,35 +22,12 @@ export const createUserSchema = object({
 
 /** Editing user schema */
 export const editUserSchema = object({
-  params: object({
-    user_uuid: string({
-      required_error: "user_uuid is required",
-    }),
-  }),
   body: object({
     emailAddress: string({
       required_error: "Email address is required",
     }).email("Not a valid email"),
     firstName: string({ required_error: "First name is required" }),
     lastName: string({ required_error: "Last name is required" }),
-  }),
-});
-
-/** Get single user schema */
-export const getSingleUserSchema = object({
-  params: object({
-    user_uuid: string({
-      required_error: "user_uuid is required",
-    }),
-  }),
-});
-
-/** Forgot password schema */
-export const forgotPasswordSchema = object({
-  params: object({
-    email: string({
-      required_error: "email is required",
-    }),
   }),
 });
 
@@ -66,6 +43,32 @@ export const changePasswordSchema = object({
   }).refine((data) => data.password === data.passwordConfirmation, {
     message: "Passwords do not match",
     path: ["passwordConfirmation"],
+  }),
+});
+
+/** Get single user schema */
+export const getUserSchema = object({
+  params: object({
+    user_uuid: string({
+      required_error: "user_uuid is required",
+    }),
+  }),
+});
+
+/** Get multiple users schema */
+export const getUsersSchema = object({
+  query: object({
+    limit: number({ required_error: "Limit is required" }),
+    page: number({ required_error: "Page is required" }),
+  }),
+});
+
+/** Forgot password schema */
+export const forgotPasswordSchema = object({
+  params: object({
+    email: string({
+      required_error: "email is required",
+    }),
   }),
 });
 
@@ -92,7 +95,8 @@ export const resetPasswordSchema = object({
 /** Exporting the schema types */
 export type CreateUser = TypeOf<typeof createUserSchema>;
 export type EditUser = TypeOf<typeof editUserSchema>;
-export type GetSingleUser = TypeOf<typeof getSingleUserSchema>;
-export type ForgotPassword = TypeOf<typeof forgotPasswordSchema>;
 export type ChangePassword = TypeOf<typeof changePasswordSchema>;
+export type GetUser = TypeOf<typeof getUserSchema>;
+export type GetUsers = TypeOf<typeof getUsersSchema>;
+export type ForgotPassword = TypeOf<typeof forgotPasswordSchema>;
 export type ResetPassword = TypeOf<typeof resetPasswordSchema>;
