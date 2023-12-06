@@ -8,16 +8,6 @@ const payload = {
     title: string({
       required_error: "title is required",
     }),
-    user_uuid: string({
-      required_error: "user_uuid is required",
-    }).refine(
-      (value) => {
-        /^[a-zA-Z0-9]+_user_[a-zA-Z0-9]{10}$/.test(value);
-      },
-      {
-        message: "Invalid user_uuid format",
-      }
-    ),
     featuredImageURL: string({
       required_error: "featuredImageURL is required",
     }),

@@ -34,3 +34,8 @@ export interface GetUserFn {
   passwordResetToken?: string;
   providerUserId?: string;
 }
+
+export interface GetPostFn {
+  slug?: string;
+  id?: number;
+}
