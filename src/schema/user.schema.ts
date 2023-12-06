@@ -34,15 +34,18 @@ export const editUserSchema = object({
 /** Change user password schema */
 export const changePasswordSchema = object({
   body: object({
-    password: string({
-      required_error: "Password is required",
-    }).min(8, "Password should not be less than 8 characters"),
-    passwordConfirmation: string({
+    oldPassword: string({
+      required_error: "Old password is required",
+    }),
+    newPassword: string({
+      required_error: "New password is required",
+    }).min(8, "New password should not be less than 8 characters"),
+    newPasswordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine((data) => data.password === data.passwordConfirmation, {
+  }).refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "Passwords do not match",
-    path: ["passwordConfirmation"],
+    path: ["newPasswordConfirmation"],
   }),
 });
 

@@ -31,4 +31,5 @@ export interface GetUserFn {
   user_uuid?: string;
   id?: number;
   emailAddress?: string;
+  passwordResetToken?: string;
 }

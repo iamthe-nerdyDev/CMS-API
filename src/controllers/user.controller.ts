@@ -1,6 +1,16 @@
 import { Request, Response } from "express";
 import log from "../utils/logger";
-import { createUser, getUser, getUsers } from "../services/user.service";
+
+import {
+  changePassword,
+  createUser,
+  editUser,
+  getUser,
+  getUsers,
+  resetPassword,
+  sendPasswordResetMail,
+} from "../services/user.service";
+
 import {
   ChangePassword,
   CreateUser,
@@ -19,7 +29,7 @@ async function createUserHanlder(
 
     if (!user) return res.status(409).send("Email address already exist");
 
-    return res.status(200).json({ status: true, data: user });
+    return res.status(201).json({ status: true, data: user });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -33,8 +43,15 @@ async function editUserHanlder(
   const { user_uuid } = res.locals.user;
 
   try {
-    //TODO: do fn
-    //const response = await editUser({ user_uuid, ...req.body });
+    const response = await editUser(user_uuid, req.body);
+
+    if (!response.stat) {
+      if (response.message == "user not found") return res.sendStatus(404);
+
+      return res.status(409).send(response.message);
+    }
+
+    return res.status(201).json({ status: true, message: response.message });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -45,11 +62,18 @@ async function changePasswordHanlder(
   req: Request<{}, {}, ChangePassword["body"]>,
   res: Response
 ) {
-  const { user_uuid } = res.locals;
+  const { user_uuid } = res.locals.user;
 
   try {
-    //TODO: do fn
-    //const response = await editUser({ user_uuid, ...req.body });
+    const response = await changePassword(user_uuid, req.body);
+
+    if (!response.stat) {
+      if (response.message == "user not found") return res.sendStatus(404);
+
+      return res.status(409).send(response.message);
+    }
+
+    return res.status(201).json({ status: true, message: response.message });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -94,8 +118,15 @@ async function forgotPasswordHanlder(
   const { email } = req.params;
 
   try {
-    //TODO: do fn
-    //const response = await sendPasswordResetMail(email);
+    const response = await sendPasswordResetMail(email);
+
+    if (!response.stat) {
+      if (response.message == "user not found") return res.sendStatus(404);
+
+      return res.status(200).json({ status: false, message: response.message });
+    }
+
+    return res.status(201).json({ status: true, message: response.message });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -109,8 +140,20 @@ async function resetPasswordHanlder(
   const { passwordResetToken } = req.params;
 
   try {
-    //TODO: do fn
-    //const response = await resetPassword({ passwordResetToken, ...req.body });
+    const response = await resetPassword(passwordResetToken, req.body);
+
+    if (!response.stat) {
+      if (
+        response.message == "token missing" ||
+        response.message == "invalid token"
+      ) {
+        return res.sendStatus(404);
+      }
+
+      return res.status(409).send(response.message);
+    }
+
+    return res.status(201).json({ status: true, message: response.message });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
