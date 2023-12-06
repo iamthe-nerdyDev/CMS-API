@@ -21,7 +21,7 @@ function createServer() {
         "Accept",
         "Authorization",
         "cache",
-        "X-Refresh-Token",
+        "X-Refresh",
       ],
     })
   );
