@@ -2,7 +2,6 @@ import { get } from "lodash";
 import { config } from "../config";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { signJWT, verifyJWT } from "../utils/jwt.utils";
-import { getUser } from "./user.service";
 
 const db = config.db;
 
@@ -70,16 +69,17 @@ export async function deleteSession(id: number) {
 export async function reIssueAccessToken(refreshToken: string) {
   const { decoded } = verifyJWT(refreshToken);
 
-  if (!decoded || !get(decoded, "session")) return false;
+  if (!decoded || !get(decoded, "session") || !get(decoded, "user_uuid")) {
+    return false;
+  }
 
   const session = await getSession(get(decoded, "session"));
   if (!session) return false; //not found
 
-  const user = await getUser({ user_uuid: session.user_uuid });
-  if (!user) return false; //not found
+  if (get(decoded, "user_uuid") !== session.user_uuid) return false; //something is just wrong over here, wrong user_uuid somewhere
 
   const accessToken = signJWT(
-    { user_uuid: user.user_uuid, session: session.id },
+    { user_uuid: session.user_uuid, session: session.id },
     { expiresIn: config.accessTokenToLive }
   );
 

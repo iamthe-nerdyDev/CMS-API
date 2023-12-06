@@ -14,6 +14,7 @@ import {
 import protectRoute from "../middleware/protectRoute";
 import passport from "passport";
 import passportController from "../controllers/passport.controller";
+import sessionController from "../controllers/session.conntroller";
 
 const router = express.Router();
 
@@ -71,5 +72,9 @@ router.get("/login/callback/google", passportController.loginGoogle);
 
 //normal login
 router.post("/login", passportController.loginLocal);
+
+/** Session routes */
+router.get("/session", protectRoute, sessionController.getSessionsHandler);
+router.delete("/session", protectRoute, sessionController.deleteSessionHandler);
 
 export = router;
