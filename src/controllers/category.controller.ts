@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
+
 import {
   CreateCategory,
   DeleteCategory,
   EditCategory,
   GetCategory,
 } from "../schema/category.schema";
+
 import {
   createCategory,
   deleteCategory,
@@ -12,6 +14,7 @@ import {
   getCategories,
   getCategory,
 } from "../services/category.service";
+
 import log from "../utils/logger";
 
 async function createCategoryHandler(
@@ -33,10 +36,7 @@ async function editCategoryHandler(
   res: Response
 ) {
   try {
-    const response = await editCategory(
-      parseInt(req.params.categoryId),
-      req.body.name
-    );
+    const response = await editCategory(req.params.categoryId, req.body.name);
 
     if (!response.stat) {
       if (response.message == "not found") return res.sendStatus(404);
@@ -52,7 +52,7 @@ async function editCategoryHandler(
 }
 
 async function getCategoryHandler(
-  req: Request<GetCategory["prams"]>,
+  req: Request<GetCategory["params"]>,
   res: Response
 ) {
   const { param } = req.params;
@@ -92,7 +92,7 @@ async function deleteCategoryHandler(
   const { categoryId } = req.params;
 
   try {
-    const response = await deleteCategory(parseInt(categoryId));
+    const response = await deleteCategory(categoryId);
 
     if (!response) return res.sendStatus(409);
 

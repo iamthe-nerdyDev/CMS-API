@@ -17,7 +17,7 @@ export const createCategorySchema = object({ ...payload });
 export const editCategorySchema = object({ ...payload, ...params });
 
 export const getCategorySchema = object({
-  prams: object({
+  params: object({
     param: string({ required_error: "categoryId or slug is required" }),
   }),
 });

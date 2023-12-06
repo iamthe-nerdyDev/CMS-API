@@ -4,6 +4,7 @@ import { generateRandomString, stringToSlug } from "../utils/helper";
 import { getCategoriesCount } from "../utils/counter";
 
 const db = config.db;
+const fallback_categoryId = 1;
 
 export async function createCategory(name: string) {
   let slug = stringToSlug(name);
@@ -28,7 +29,7 @@ export async function createCategory(name: string) {
   }
 }
 
-export async function editCategory(id: number, name: string) {
+export async function editCategory(id: number | string, name: string) {
   try {
     const doesIdExist = await getCategory(id);
     if (!doesIdExist) return { stat: false, message: "not found" };
@@ -54,12 +55,20 @@ export async function editCategory(id: number, name: string) {
   }
 }
 
-export async function deleteCategory(id: number) {
+export async function deleteCategory(id: number | string) {
+  if (id == fallback_categoryId) return false; //disable deletion of fallback category
+
   try {
     const response = await db.query<ResultSetHeader>(
       `DELETE FROM category WHERE id = ?`,
       [id]
     );
+
+    //set all post with the deleted categoryId to the fallback categoryId i.e 1
+    await db.query(`UPDATE post SET categoryId = ? WHERE categoryId = ?`, [
+      fallback_categoryId,
+      id,
+    ]);
 
     return response[0].affectedRows >= 1;
   } catch (e: any) {
@@ -93,7 +102,7 @@ export async function getCategories(limit: number, page: number) {
     if (total <= 0) return { page, limit, total, data: null };
 
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT * FROM user ORDER BY createdAt DESC LIMIT ?, ?`,
+      `SELECT * FROM category ORDER BY createdAt DESC LIMIT ?, ?`,
       [skip, limit]
     );
 

@@ -3,6 +3,7 @@ USE cms;
 
 CREATE TABLE `post` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `categoryId` INT NOT NULL,
   `slug` VARCHAR(255) NOT NULL,
   `title` VARCHAR(255) NOT NULL,
   `user_uuid` VARCHAR(50) NOT NULL,
