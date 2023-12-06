@@ -31,7 +31,7 @@ export async function createCategory(name: string) {
 export async function editCategory(id: number, name: string) {
   try {
     const doesIdExist = await getCategory(id);
-    if (!doesIdExist) return false;
+    if (!doesIdExist) return { stat: false, message: "not found" };
 
     if (name != doesIdExist.name) {
       let slug = stringToSlug(name);
@@ -39,15 +39,16 @@ export async function editCategory(id: number, name: string) {
       const doesSlugExist = await getCategory(slug);
       if (doesSlugExist) slug = `${slug}-${generateRandomString()}`;
 
-      const response = await db.query<ResultSetHeader>(
-        `UPDATE category SET name = ?, slug = ? WHERE id = ?`,
-        [name, slug, id]
-      );
+      await db.query(`UPDATE category SET name = ?, slug = ? WHERE id = ?`, [
+        name,
+        slug,
+        id,
+      ]);
 
-      return response[0].affectedRows >= 1;
+      return { stat: true, message: "Category updated" };
     }
 
-    return false;
+    return { stat: true, message: "No row affected" };
   } catch (e: any) {
     throw new Error(e);
   }
