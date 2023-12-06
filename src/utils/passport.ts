@@ -70,13 +70,13 @@ function initPassport(app: Express) {
       },
       async (email, password, done) => {
         const user = await getUser({ emailAddress: email }, false);
-        if (!user) return done(null, false, { message: "Wrong email" });
+        if (!user) return done(new Error("Wrong email"));
 
         const compare = await bcryptjs.compare(password, user.password);
-        if (!compare) return done(null, false, { message: "Wrong password" });
+        if (!compare) return done(new Error("Wrong password"));
 
         //login is successful
-        return done(null, omit(user, "password"));
+        return done(false, omit(user, "password"));
       }
     )
   );
@@ -96,9 +96,7 @@ function initPassport(app: Express) {
           try {
             if (!profile._json.email) {
               //incase phone number was used to create fb account
-              return done(null, false, {
-                message: "Email not linked to facebook account",
-              });
+              return done(new Error("Email not linked to facebook account"));
             }
 
             const { user, error } = await getOrCreateUserFromSocialProvider(
@@ -110,11 +108,11 @@ function initPassport(app: Express) {
               "facebook"
             );
 
-            if (error) return done(null, false, { message: error });
+            if (error) return done(new Error(error));
 
             return done(null, user);
           } catch (e) {
-            return done(null, null, { message: "Unknown error" });
+            return done(new Error("Unknown error"));
           }
         });
       }
@@ -135,9 +133,7 @@ function initPassport(app: Express) {
           try {
             //incase phone number was used to create google account
             if (!profile._json.email) {
-              return done(null, false, {
-                message: "Email not linked to google account",
-              });
+              return done(new Error("Email not linked to google account"));
             }
 
             const { user, error } = await getOrCreateUserFromSocialProvider(
@@ -149,11 +145,11 @@ function initPassport(app: Express) {
               "google"
             );
 
-            if (error) return done(null, false, { message: error });
+            if (error) return done(new Error(error));
 
             return done(null, user);
           } catch (err) {
-            return done(null, null, { message: "Unknown error" });
+            return done(new Error("Unknown error"));
           }
         });
       }
@@ -172,16 +168,14 @@ function initPassport(app: Express) {
       function (_, __, ___, profile, done) {
         process.nextTick(async function () {
           try {
-            //incase phone number was used to create twitter account
             if (!profile.emails) {
-              return done(
-                { message: "Email not linked to google account" },
-                false
-              );
+              //incase phone number was used to create twitter account
+              return done(new Error("Email not linked to google account"));
             }
 
             if (!profile.name) {
-              return done({ message: "Unable to retrieve user names" }, false);
+              //no name to fetch..
+              return done(new Error("Unable to retrieve profile name"));
             }
 
             const { user, error } = await getOrCreateUserFromSocialProvider(
@@ -193,11 +187,11 @@ function initPassport(app: Express) {
               "twitter"
             );
 
-            if (error) return done({ message: error }, false);
+            if (error) return done(new Error(error));
 
             return done(null, user);
           } catch (err) {
-            return done({ message: "Unknown error" }, null);
+            return done(new Error("Unknown error"));
           }
         });
       }
