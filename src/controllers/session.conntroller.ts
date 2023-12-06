@@ -8,8 +8,6 @@ async function getSessionsHandler(_: Request, res: Response) {
   try {
     const response = await getSessions(user_uuid);
 
-    if (!response) return res.sendStatus(409);
-
     return res.status(200).json({ status: true, data: response });
   } catch (e: any) {
     log.error(e);
@@ -18,15 +16,15 @@ async function getSessionsHandler(_: Request, res: Response) {
 }
 
 async function deleteSessionHandler(_: Request, res: Response) {
-  const { session } = res.locals.user;
+  const { session, user_uuid } = res.locals.user;
 
   try {
-    const response = await deleteSession(session);
+    const response = await deleteSession(session, user_uuid);
 
     if (!response) return res.sendStatus(409);
 
     return res
-      .status(201)
+      .status(200)
       .json({ status: true, accessToken: null, refreshToken: null });
   } catch (e: any) {
     log.error(e);

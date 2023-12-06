@@ -5,14 +5,14 @@ import { signJWT, verifyJWT } from "../utils/jwt.utils";
 
 const db = config.db;
 
-export async function createSession(user_uuid: string, userAgent: string) {
+export async function createSession(user_uuid: string, userAgent?: string) {
   try {
     const response = await db.query<ResultSetHeader>(
       `
     INSERT INTO session (user_uuid, userAgent)
     VALUES (?, ?)
     `,
-      [user_uuid, userAgent]
+      [user_uuid, userAgent ?? null]
     );
 
     const session = await getSession(response[0].insertId);
@@ -53,8 +53,13 @@ export async function getSessions(user_uuid: string) {
   }
 }
 
-export async function deleteSession(id: number) {
+export async function deleteSession(id: number, user_uuid: string) {
   try {
+    const session = await getSession(id);
+    if (!session) return false;
+
+    if (session.user_uuid !== user_uuid) return false; //trying to delete another niggas shit!
+
     const response = await db.query<ResultSetHeader>(
       `DELETE FROM session WHERE id = ?`,
       [id]
