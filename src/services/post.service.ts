@@ -4,6 +4,9 @@ import { getPostsCount } from "../utils/counter";
 import { GetPostFn } from "../interface";
 import { CreatePost, EditPost } from "../schema/post.schema";
 import { generateRandomString, stringToSlug } from "../utils/helper";
+import { isArray } from "lodash";
+import { getCategory } from "./category.service";
+import { getUser } from "./user.service";
 
 const db = config.db;
 
@@ -102,7 +105,7 @@ export async function deletePost(user_uuid: string, id: number) {
   }
 }
 
-export async function getPost(data: GetPostFn) {
+export async function getPost(data: GetPostFn, populate: boolean = false) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT * FROM post WHERE slug = ? OR id = ? LIMIT 1`,
@@ -113,7 +116,8 @@ export async function getPost(data: GetPostFn) {
 
     if (!post || Object.keys(post).length === 0) return undefined;
 
-    return post;
+    if (populate) return populatePost(post);
+    else return post;
   } catch (e: any) {
     throw new Error(e);
   }
@@ -122,7 +126,8 @@ export async function getPost(data: GetPostFn) {
 export async function getPosts(
   limit: number,
   page: number,
-  param?: { user_uuid?: string; categoryId?: number }
+  param?: { user_uuid?: string; categoryId?: number },
+  populate: boolean = false
 ) {
   const skip = (page - 1) * limit;
 
@@ -146,8 +151,24 @@ export async function getPosts(
       [skip, limit]
     );
 
-    return { page, limit, total, data: rows };
+    return { page, limit, total, data: populate ? populatePost(rows) : rows };
   } catch (e: any) {
     throw new Error(e);
   }
+}
+
+async function populatePost(post: any) {
+  if (!post) return post;
+
+  if (isArray(post)) {
+    post.map(async (_post) => {
+      _post.categoryId = await getCategory(_post.categoryId as number);
+      _post.user_uuid = await getUser({ user_uuid: _post.user_uuid as string });
+    });
+  } else {
+    post.categoryId = await getCategory(post.categoryId as number);
+    post.user_uuid = await getUser({ user_uuid: post.user_uuid as string });
+  }
+
+  return post;
 }

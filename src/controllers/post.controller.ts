@@ -86,10 +86,13 @@ async function getPostHandler(req: Request<GetPost["params"]>, res: Response) {
   const { param } = req.params;
 
   try {
-    const post = await getPost({
-      slug: param,
-      id: !isNaN(parseInt(param)) ? parseInt(param) : undefined,
-    });
+    const post = await getPost(
+      {
+        slug: param,
+        id: !isNaN(parseInt(param)) ? parseInt(param) : undefined,
+      },
+      true
+    );
 
     if (!post) return res.sendStatus(404);
 
@@ -119,7 +122,8 @@ async function getPostsHandler(
             user_uuid: param,
             categoryId: !isNaN(parseInt(param)) ? parseInt(param) : undefined,
           }
-        : undefined
+        : undefined,
+      true
     );
 
     return res.status(200).json({ status: true, data: posts });
