@@ -1,8 +1,8 @@
-import { object, string, TypeOf } from "zod";
+import { number, object, string, TypeOf } from "zod";
 
 const payload = {
   body: object({
-    categoryId: string({
+    categoryId: number({
       required_error: "categoryId is required",
     }),
     title: string({

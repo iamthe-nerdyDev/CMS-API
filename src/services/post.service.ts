@@ -105,7 +105,7 @@ export async function deletePost(user_uuid: string, id: number) {
 export async function getPost(data: GetPostFn) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT * FROM post WHERE slug = ? OR id = LIMIT 1`,
+      `SELECT * FROM post WHERE slug = ? OR id = ? LIMIT 1`,
       [data.slug, data.id]
     );
 
