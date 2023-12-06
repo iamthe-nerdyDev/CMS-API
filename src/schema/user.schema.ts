@@ -6,18 +6,27 @@ export const createUserSchema = object({
     emailAddress: string({
       required_error: "Email address is required",
     }).email("Not a valid email"),
-    firstName: string({ required_error: "First name is required" }),
-    lastName: string({ required_error: "Last name is required" }),
+    firstName: string({
+      required_error: "First name is required",
+    }),
+    lastName: string({
+      required_error: "Last name is required",
+    }),
     password: string({
       required_error: "Password is required",
     }).min(8, "Password should not be less than 8 characters"),
     passwordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords do not match",
-    path: ["passwordConfirmation"],
-  }),
+  }).refine(
+    (data) => {
+      data.password === data.passwordConfirmation;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["passwordConfirmation"],
+    }
+  ),
 });
 
 /** Editing user schema */
@@ -26,8 +35,12 @@ export const editUserSchema = object({
     emailAddress: string({
       required_error: "Email address is required",
     }).email("Not a valid email"),
-    firstName: string({ required_error: "First name is required" }),
-    lastName: string({ required_error: "Last name is required" }),
+    firstName: string({
+      required_error: "First name is required",
+    }),
+    lastName: string({
+      required_error: "Last name is required",
+    }),
   }),
 });
 
@@ -43,10 +56,15 @@ export const changePasswordSchema = object({
     newPasswordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine((data) => data.newPassword === data.newPasswordConfirmation, {
-    message: "Passwords do not match",
-    path: ["newPasswordConfirmation"],
-  }),
+  }).refine(
+    (data) => {
+      data.newPassword === data.newPasswordConfirmation;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["newPasswordConfirmation"],
+    }
+  ),
 });
 
 /** Get single user schema */
@@ -54,9 +72,14 @@ export const getUserSchema = object({
   params: object({
     user_uuid: string({
       required_error: "user_uuid is required",
-    }).refine((value) => /^[a-zA-Z0-9]+_user_[a-zA-Z0-9]{10}$/.test(value), {
-      message: "Invalid user_uuid format",
-    }),
+    }).refine(
+      (value) => {
+        /^[a-zA-Z0-9]+_user_[a-zA-Z0-9]{10}$/.test(value);
+      },
+      {
+        message: "Invalid user_uuid format",
+      }
+    ),
   }),
 });
 
@@ -83,10 +106,15 @@ export const resetPasswordSchema = object({
     passwordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine((data) => data.password === data.passwordConfirmation, {
-    message: "Passwords do not match",
-    path: ["passwordConfirmation"],
-  }),
+  }).refine(
+    (data) => {
+      data.password === data.passwordConfirmation;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["passwordConfirmation"],
+    }
+  ),
 });
 
 /** Exporting the schema types */
