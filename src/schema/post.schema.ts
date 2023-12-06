@@ -39,7 +39,16 @@ export const getPostSchema = object({
   }),
 });
 
+export const getPostsSchema = object({
+  params: object({
+    param: string({
+      required_error: "categoryId or user_uuid is required",
+    }),
+  }),
+});
+
 export type CreatePost = TypeOf<typeof createPostSchema>;
 export type EditPost = TypeOf<typeof editPostSchema>;
 export type DeletePost = TypeOf<typeof deletePostSchema>;
 export type GetPost = TypeOf<typeof getPostSchema>;
+export type GetPosts = TypeOf<typeof getPostsSchema>;
