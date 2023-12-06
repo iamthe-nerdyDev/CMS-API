@@ -35,11 +35,6 @@ export interface GetUserFn {
   providerUserId?: string;
 }
 
-export interface GetPostFn {
-  slug?: string;
-  id?: number;
-}
-
 export interface SendMailParams {
   receiver: string;
   subject: string;

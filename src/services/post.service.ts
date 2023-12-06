@@ -1,7 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { config } from "../config";
 import { getPostsCount } from "../utils/counter";
-import { GetPostFn } from "../interface";
 import { CreatePost, EditPost } from "../schema/post.schema";
 import { generateRandomString, stringToSlug } from "../utils/helper";
 import { isArray } from "lodash";
@@ -18,7 +17,10 @@ export async function createPost(user_uuid: string, data: CreatePost["body"]) {
     if (doesSlugExist) slug = `${slug}-${generateRandomString()}`;
 
     const response = await db.query<ResultSetHeader>(
-      `INSERT INTO post (title, slug, uuid, categoryId, featuredImageURL, body) VALUES(?, ?, ?, ?, ?, ?)`,
+      `
+      INSERT INTO post (title, slug, uuid, categoryId, featuredImageURL, body) 
+      VALUES(?, ?, ?, ?, ?, ?)
+      `,
       [
         data.title,
         slug,
@@ -90,22 +92,29 @@ export async function editPost(
 export async function deletePost(user_uuid: string, id: number) {
   try {
     const post = await getPost({ id });
-    if (!post) return false;
+    if (!post) return { stat: false, message: "not found" };
 
-    if (post.user_uuid !== user_uuid) return false; //don't have access to delete it
+    if (post.user_uuid !== user_uuid) return { stat: false, message: "denied" }; //don't have access to delete it
 
     const response = await db.query<ResultSetHeader>(
       `DELETE FROM post WHERE id = ?`,
       [id]
     );
 
-    return response[0].affectedRows >= 1;
+    return {
+      stat: true,
+      message:
+        response[0].affectedRows >= 1 ? "Post deleted" : "No row affected",
+    };
   } catch (e: any) {
     throw new Error(e);
   }
 }
 
-export async function getPost(data: GetPostFn, populate: boolean = false) {
+export async function getPost(
+  data: { slug?: string; id?: number },
+  populate: boolean = false
+) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT * FROM post WHERE slug = ? OR id = ? LIMIT 1`,
@@ -162,11 +171,11 @@ async function populatePost(post: any) {
 
   if (isArray(post)) {
     post.map(async (_post) => {
-      _post.categoryId = await getCategory(_post.categoryId as number);
+      _post.categoryId = await getCategory({ id: _post.categoryId as number });
       _post.user_uuid = await getUser({ user_uuid: _post.user_uuid as string });
     });
   } else {
-    post.categoryId = await getCategory(post.categoryId as number);
+    post.categoryId = await getCategory({ id: post.categoryId as number });
     post.user_uuid = await getUser({ user_uuid: post.user_uuid as string });
   }
 

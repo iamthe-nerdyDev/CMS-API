@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-
 import {
   CreatePost,
   DeletePost,
@@ -7,7 +6,6 @@ import {
   GetPost,
   GetPosts,
 } from "../schema/post.schema";
-
 import {
   createPost,
   deletePost,
@@ -15,7 +13,6 @@ import {
   getPost,
   getPosts,
 } from "../services/post.service";
-
 import log from "../utils/logger";
 
 async function createPostHandler(
@@ -26,8 +23,6 @@ async function createPostHandler(
 
   try {
     const post = await createPost(user_uuid, req.body);
-
-    if (!post) return res.sendStatus(500); //for one reason or the other its returning undefined
 
     return res.status(201).json({ status: true, data: post });
   } catch (e: any) {
@@ -41,20 +36,21 @@ async function editPostHandler(
   res: Response
 ) {
   const { user_uuid } = res.locals.user;
-  const postId = parseInt(req.params.postId);
+  const { postId } = req.params;
 
-  if (isNaN(postId)) return res.sendStatus(400);
+  if (isNaN(parseInt(postId))) return res.sendStatus(400);
 
   try {
-    const response = await editPost(postId, user_uuid, req.body);
+    const response = await editPost(parseInt(postId), user_uuid, req.body);
 
     if (!response.stat) {
       if (response.message == "not found") return res.sendStatus(404);
+      if (response.message == "denied") return res.sendStatus(403);
 
       return res.status(409).send(response.message);
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -66,16 +62,16 @@ async function deletePostHandler(
   res: Response
 ) {
   const { user_uuid } = res.locals.user;
-  const postId = parseInt(req.params.postId);
+  const { postId } = req.params;
 
-  if (isNaN(postId)) return res.sendStatus(400);
+  if (isNaN(parseInt(postId))) return res.sendStatus(400);
 
   try {
-    const response = await deletePost(user_uuid, postId);
+    const response = await deletePost(user_uuid, parseInt(postId));
 
     if (!response) return res.sendStatus(409);
 
-    return res.status(201).json({ status: true });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
