@@ -10,9 +10,21 @@ export async function getUsersCount(): Promise<number> {
       `SELECT COUNT(*) AS totalUsers from user`
     );
 
-    const totalUsers = row[0].totalUsers;
+    return row[0].totalUsers;
+  } catch (e: any) {
+    log.error(e);
 
-    return totalUsers;
+    return 0;
+  }
+}
+
+export async function getCategoriesCount(): Promise<number> {
+  try {
+    const [row] = await db.query<RowDataPacket[]>(
+      `SELECT COUNT(*) AS totalCategories from category`
+    );
+
+    return row[0].totalCategories;
   } catch (e: any) {
     log.error(e);
 
