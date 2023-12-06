@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
-
 import {
   CreateCategory,
   DeleteCategory,
   EditCategory,
   GetCategory,
 } from "../schema/category.schema";
-
 import {
   createCategory,
   deleteCategory,
@@ -14,7 +12,6 @@ import {
   getCategories,
   getCategory,
 } from "../services/category.service";
-
 import log from "../utils/logger";
 
 async function createCategoryHandler(
@@ -22,9 +19,9 @@ async function createCategoryHandler(
   res: Response
 ) {
   try {
-    const response = await createCategory(req.body.name);
+    const category = await createCategory(req.body.name);
 
-    return res.status(201).json({ status: true, data: response });
+    return res.status(201).json({ status: true, data: category });
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -35,8 +32,12 @@ async function editCategoryHandler(
   req: Request<EditCategory["params"], {}, EditCategory["body"]>,
   res: Response
 ) {
+  const { categoryId } = req.params;
+
+  if (isNaN(parseInt(categoryId))) return res.sendStatus(400);
+
   try {
-    const response = await editCategory(req.params.categoryId, req.body.name);
+    const response = await editCategory(parseInt(categoryId), req.body.name);
 
     if (!response.stat) {
       if (response.message == "not found") return res.sendStatus(404);
@@ -44,7 +45,7 @@ async function editCategoryHandler(
       return res.status(409).send(response.message);
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -58,7 +59,10 @@ async function getCategoryHandler(
   const { param } = req.params;
 
   try {
-    const category = await getCategory(param);
+    const category = await getCategory({
+      slug: param,
+      id: !isNaN(parseInt(param)) ? parseInt(param) : undefined,
+    });
 
     if (!category) return res.sendStatus(404);
 
@@ -91,12 +95,14 @@ async function deleteCategoryHandler(
 ) {
   const { categoryId } = req.params;
 
+  if (isNaN(parseInt(categoryId))) return res.sendStatus(400);
+
   try {
-    const response = await deleteCategory(categoryId);
+    const response = await deleteCategory(parseInt(categoryId));
 
     if (!response) return res.sendStatus(409);
 
-    return res.status(201).json({ status: true });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);

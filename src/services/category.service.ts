@@ -4,13 +4,13 @@ import { generateRandomString, stringToSlug } from "../utils/helper";
 import { getCategoriesCount } from "../utils/counter";
 
 const db = config.db;
-const fallback_categoryId = 1;
+const fallback_categoryId = 1; //fallback categoryId: Uncategorized
 
 export async function createCategory(name: string) {
   let slug = stringToSlug(name);
 
   try {
-    const doesSlugExist = await getCategory(slug);
+    const doesSlugExist = await getCategory({ slug });
     if (doesSlugExist) slug = `${slug}-${generateRandomString()}`;
 
     const response = await db.query<ResultSetHeader>(
@@ -21,7 +21,7 @@ export async function createCategory(name: string) {
       [name, slug]
     );
 
-    const category = await getCategory(response[0].insertId);
+    const category = await getCategory({ id: response[0].insertId });
 
     return category;
   } catch (e: any) {
@@ -29,15 +29,15 @@ export async function createCategory(name: string) {
   }
 }
 
-export async function editCategory(id: number | string, name: string) {
+export async function editCategory(id: number, name: string) {
   try {
-    const doesIdExist = await getCategory(id);
-    if (!doesIdExist) return { stat: false, message: "not found" };
+    const isCategoryIDValid = await getCategory({ id });
+    if (!isCategoryIDValid) return { stat: false, message: "not found" };
 
-    if (name != doesIdExist.name) {
+    if (name != isCategoryIDValid.name) {
       let slug = stringToSlug(name);
 
-      const doesSlugExist = await getCategory(slug);
+      const doesSlugExist = await getCategory({ slug });
       if (doesSlugExist) slug = `${slug}-${generateRandomString()}`;
 
       await db.query(`UPDATE category SET name = ?, slug = ? WHERE id = ?`, [
@@ -55,8 +55,8 @@ export async function editCategory(id: number | string, name: string) {
   }
 }
 
-export async function deleteCategory(id: number | string) {
-  if (id == fallback_categoryId) return false; //disable deletion of fallback category
+export async function deleteCategory(id: number) {
+  if (id === fallback_categoryId) return false; //disable deletion of fallback category
 
   try {
     const response = await db.query<ResultSetHeader>(
@@ -76,11 +76,11 @@ export async function deleteCategory(id: number | string) {
   }
 }
 
-export async function getCategory(param: number | string) {
+export async function getCategory(data: { slug?: string; id?: number }) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT * FROM category WHERE id = ? OR slug = ? LIMIT 1`,
-      [param, param]
+      [data.id, data.slug]
     );
 
     const category = rows[0];
