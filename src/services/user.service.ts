@@ -13,6 +13,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { omit } from "lodash";
 import { GetUserFn } from "../interface";
 import { getUsersCount } from "../utils/counter";
+import { sendMail } from "../utils/nodemailer";
 
 const db = config.db;
 
@@ -243,8 +244,23 @@ export async function sendPasswordResetMail(emailAddress: string) {
 
     if (token) {
       //send email here
+      const link = `${config.client_url}/reset-password/${token}`;
+      const body = `Click on this link to reset password: <a href="${link}">${link}</a>`;
 
-      return { stat: true, message: "Password reset email sent successfully" };
+      const mailSent = await sendMail({
+        receiver: emailAddress,
+        subject: "CMS::Password Recovery Email",
+        html: body,
+      });
+
+      if (mailSent) {
+        return {
+          stat: true,
+          message: "Password reset email sent successfully",
+        };
+      }
+
+      return { stat: false, message: "Unable to send password reset email" };
     }
 
     return { stat: false, message: "Unable to complete the operation" };
