@@ -65,8 +65,14 @@ export async function createUser(param: CreateUser["body"]) {
 export async function getUser(data: GetUserFn, hidePassword: boolean = true) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT * FROM user WHERE user_uuid = ? OR id = ? OR emailAddress = ? OR passwordResetToken = ? LIMIT 1`,
-      [data.user_uuid, data.id, data.emailAddress, data.passwordResetToken]
+      `SELECT * FROM user WHERE user_uuid = ? OR id = ? OR emailAddress = ? OR passwordResetToken = ? OR providerUserId = ? LIMIT 1`,
+      [
+        data.user_uuid,
+        data.id,
+        data.emailAddress,
+        data.passwordResetToken,
+        data.providerUserId,
+      ]
     );
 
     const user = rows[0];
@@ -242,6 +248,63 @@ export async function sendPasswordResetMail(emailAddress: string) {
     }
 
     return { stat: false, message: "Unable to complete the operation" };
+  } catch (e: any) {
+    throw new Error(e);
+  }
+}
+
+export async function getOrCreateUserFromSocialProvider(
+  providerUserId: string,
+  firstName: string,
+  lastName: string,
+  profileImageURL: string | null,
+  emailAddress: string,
+  provider: "google" | "twitter" | "facebook" | "email"
+) {
+  try {
+    const output: { user: any; error?: string } = {
+      user: {},
+      error: undefined,
+    };
+
+    //check if email address already exist...
+    const isUserAlreadyRegistered = await getUser({ providerUserId });
+    if (isUserAlreadyRegistered) {
+      //there is a user with this providerUserId......valid
+      output.user = isUserAlreadyRegistered;
+
+      return output;
+    }
+
+    //trying to register a new user
+    //check if the email address is not used to create another account
+    const doesEmailExist = await getUser({ providerUserId });
+    if (doesEmailExist) {
+      output.error = `This email is already linked to a user with a ${doesEmailExist.provider} account`;
+
+      return output;
+    }
+
+    //just proceed to registering the user...
+    const response = await db.query<ResultSetHeader>(
+      `
+    INSERT INTO user (emailAddress, firstName, lastName, provider, providerUserId, profileImageURL, user_uuid)
+    VALUES (?, ?, ?, ?, ?)
+    `,
+      [
+        emailAddress,
+        firstName,
+        lastName,
+        provider,
+        providerUserId,
+        profileImageURL,
+        `${provider}_user_${nanoid()}`,
+      ]
+    );
+
+    output.user = await getUser({ id: response[0].insertId });
+
+    return output;
   } catch (e: any) {
     throw new Error(e);
   }

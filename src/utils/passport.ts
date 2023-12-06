@@ -6,6 +6,12 @@ import { Strategy as TwitterStrategy } from "passport-twitter";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 import { config } from "../config";
+import {
+  getOrCreateUserFromSocialProvider,
+  getUser,
+} from "../services/user.service";
+import bcryptjs from "bcryptjs";
+import { omit } from "lodash";
 
 function initPassport(app: Express) {
   app.use(passport.initialize());
@@ -42,11 +48,13 @@ function initPassport(app: Express) {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: config.jwt_secret,
       },
-      function (jwtPayload, _callback) {
+      async function (jwtPayload, done) {
         const user_uuid = jwtPayload.user_uuid;
 
-        //TODO: get stuffs from db and pass it as the jwtPayload in the _callback fnn
-        return _callback(null, jwtPayload);
+        const user = await getUser({ user_uuid });
+
+        //TODO: get stuffs from db and pass it as the jwtPayload in the done fnn
+        return done(null, user);
       }
     )
   );
@@ -60,9 +68,15 @@ function initPassport(app: Express) {
         passwordField: "password",
         session: false,
       },
-      async (email, password, _callback) => {
-        //TODO: Check for the user and ensure email and password is valid
-        //return _callback(null or error, false or userObject, { message: errorMsg });
+      async (email, password, done) => {
+        const user = await getUser({ emailAddress: email }, false);
+        if (!user) return done(null, false, { message: "Wrong email" });
+
+        const compare = await bcryptjs.compare(password, user.password);
+        if (!compare) return done(null, false, { message: "Wrong password" });
+
+        //login is successful
+        return done(null, omit(user, "password"));
       }
     )
   );
@@ -73,23 +87,34 @@ function initPassport(app: Express) {
       {
         clientID: config.passport.facebook.clientID,
         clientSecret: config.passport.facebook.clientSecret,
-        callbackURL: config.base_url + "/api/v1/auth/callback/facebook",
+        callbackURL: config.base_url + "/api/v1/login/callback/facebook",
         profileFields: ["id", "first_name", "last_name", "email", "picture"],
         passReqToCallback: true,
       },
-      function (req, _, __, profile, _callback) {
+      function (_, __, ___, profile, done) {
         process.nextTick(async function () {
           try {
             if (!profile._json.email) {
               //incase phone number was used to create fb account
-              return _callback(null, false, {
+              return done(null, false, {
                 message: "Email not linked to facebook account",
               });
             }
 
-            //TODO: Try getting or creating a user and return necessary stuffs
+            const { user, error } = await getOrCreateUserFromSocialProvider(
+              profile.id,
+              profile._json.first_name,
+              profile._json.last_name,
+              profile._json.picture.data.url,
+              profile._json.email,
+              "facebook"
+            );
+
+            if (error) return done(null, false, { message: error });
+
+            return done(null, user);
           } catch (e) {
-            return _callback(null, null, { message: "Unknown error" });
+            return done(null, null, { message: "Unknown error" });
           }
         });
       }
@@ -102,22 +127,33 @@ function initPassport(app: Express) {
       {
         clientID: config.passport.google.clientID,
         clientSecret: config.passport.google.clientSecret,
-        callbackURL: config.base_url + "/api/v1/auth/callback/google",
+        callbackURL: config.base_url + "/api/v1/login/callback/google",
         passReqToCallback: true,
       },
-      function (req, _, __, profile, _callback) {
+      function (_, __, ___, profile, done) {
         process.nextTick(async function () {
           try {
             //incase phone number was used to create google account
             if (!profile._json.email) {
-              return _callback(null, false, {
+              return done(null, false, {
                 message: "Email not linked to google account",
               });
             }
 
-            //TODO: Try getting or creating a user and return necessary stuffs
+            const { user, error } = await getOrCreateUserFromSocialProvider(
+              profile.id,
+              profile._json.given_name,
+              profile._json.family_name,
+              profile._json.picture,
+              profile._json.email,
+              "google"
+            );
+
+            if (error) return done(null, false, { message: error });
+
+            return done(null, user);
           } catch (err) {
-            return _callback(null, null, { message: "Unknown error" });
+            return done(null, null, { message: "Unknown error" });
           }
         });
       }
@@ -130,23 +166,38 @@ function initPassport(app: Express) {
       {
         consumerKey: config.passport.x.clientID,
         consumerSecret: config.passport.x.clientSecret,
-        callbackURL: config.base_url + "/api/v1/auth/callback/twitter",
+        callbackURL: config.base_url + "/api/v1/login/callback/twitter",
         passReqToCallback: true,
       },
-      function (req, _, __, profile, _callback) {
+      function (_, __, ___, profile, done) {
         process.nextTick(async function () {
           try {
             //incase phone number was used to create twitter account
-            if (!profile._json.email) {
-              return _callback(
+            if (!profile.emails) {
+              return done(
                 { message: "Email not linked to google account" },
                 false
               );
             }
 
-            //TODO: Try getting or creating a user and return necessary stuffs
+            if (!profile.name) {
+              return done({ message: "Unable to retrieve user names" }, false);
+            }
+
+            const { user, error } = await getOrCreateUserFromSocialProvider(
+              profile.id,
+              profile.name.givenName,
+              profile.name.familyName,
+              (profile.photos && profile.photos[0].value) || null,
+              profile.emails[0].value,
+              "twitter"
+            );
+
+            if (error) return done({ message: error }, false);
+
+            return done(null, user);
           } catch (err) {
-            return _callback({ message: "Unknown error" }, null);
+            return done({ message: "Unknown error" }, null);
           }
         });
       }
