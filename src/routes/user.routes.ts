@@ -10,6 +10,7 @@ import {
   resetPasswordSchema,
 } from "../schema/user.schema";
 import protectRoute from "../middleware/protectRoute";
+import passport from "passport";
 
 const router = express.Router();
 
@@ -46,5 +47,26 @@ router.put(
   validate(resetPasswordSchema),
   controller.resetPasswordHanlder
 );
+
+//facebook social login routes
+router.get(
+  "/login/facebook",
+  passport.authenticate("facebook", { scope: ["email"] })
+);
+router.get("/login/callback/facebook");
+
+//twitter social login routes
+router.get("/login/twitter", passport.authenticate("twitter"));
+router.get("/login/callback/twitter");
+
+//google social login route
+router.get(
+  "/login/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+router.get("/login/callback/google");
+
+//normal login
+router.post("/login");
 
 export = router;
