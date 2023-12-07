@@ -14,6 +14,7 @@ import {
   getPosts,
 } from "../services/post.service";
 import log from "../utils/logger";
+import { broadcastEvent } from "../utils/socket";
 
 async function createPostHandler(
   req: Request<{}, {}, CreatePost["body"]>,
@@ -23,6 +24,14 @@ async function createPostHandler(
 
   try {
     const post = await createPost(user_uuid, req.body);
+
+    broadcastEvent({
+      target: "post",
+      action: "create",
+      data: {
+        id: post!.id,
+      },
+    });
 
     return res.status(201).json({ status: true, data: post });
   } catch (e: any) {
@@ -50,6 +59,14 @@ async function editPostHandler(
       return res.status(409).send(response.message);
     }
 
+    broadcastEvent({
+      target: "post",
+      action: "update",
+      data: {
+        id: parseInt(postId),
+      },
+    });
+
     return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
@@ -70,6 +87,14 @@ async function deletePostHandler(
     const response = await deletePost(user_uuid, parseInt(postId));
 
     if (!response) return res.sendStatus(409);
+
+    broadcastEvent({
+      target: "post",
+      action: "delete",
+      data: {
+        id: parseInt(postId),
+      },
+    });
 
     return res.sendStatus(204);
   } catch (e: any) {
