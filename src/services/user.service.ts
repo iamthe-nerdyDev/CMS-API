@@ -1,35 +1,18 @@
 import bcryptjs from "bcryptjs";
 import { config } from "../config";
-
 import {
   ChangePassword,
   CreateUser,
   EditUser,
   ResetPassword,
 } from "../schema/user.schema";
-
-import { customAlphabet } from "nanoid";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { omit } from "lodash";
-import { GetUserFn } from "../interface";
 import { getUsersCount } from "../utils/counter";
 import { sendMail } from "../utils/nodemailer";
+import { generateRandomString, hashPassword } from "../utils/helper";
 
 const db = config.db;
-
-const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
-const passwordResetTokenid = customAlphabet(
-  "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  20
-);
-const tokenValidity = 24 * 60 * 60 * 1000; //24 hours
-
-async function hashPassword(clientPassword: string) {
-  const salt = await bcryptjs.genSalt(config.saltWorkFactor);
-  const hashedPassword = await bcryptjs.hash(clientPassword, salt);
-
-  return hashedPassword;
-}
 
 export async function createUser(param: CreateUser["body"]) {
   const { emailAddress, firstName, lastName, password } = param;
@@ -51,7 +34,7 @@ export async function createUser(param: CreateUser["body"]) {
         firstName,
         lastName,
         hashedPassword,
-        `email_user_${nanoid()}`,
+        `email_user_${generateRandomString(10)}`,
       ]
     );
 
@@ -63,7 +46,16 @@ export async function createUser(param: CreateUser["body"]) {
   }
 }
 
-export async function getUser(data: GetUserFn, hidePassword: boolean = true) {
+export async function getUser(
+  data: {
+    user_uuid?: string;
+    id?: number;
+    emailAddress?: string;
+    passwordResetToken?: string;
+    providerUserId?: string;
+  },
+  hidePassword: boolean = true
+) {
   try {
     const [rows] = await db.query<RowDataPacket[]>(
       `SELECT * FROM user WHERE user_uuid = ? OR id = ? OR emailAddress = ? OR passwordResetToken = ? OR providerUserId = ? LIMIT 1`,
@@ -117,11 +109,21 @@ export async function editUser(user_uuid: string, param: EditUser["body"]) {
 
   try {
     const user = await getUser({ user_uuid });
-    if (!user) return { stat: false, message: "user not found" };
+    if (!user) return { stat: false, message: "not found" };
+
+    if (user.user_uuid !== user_uuid) return { stat: false, message: "denied" };
 
     let isChangeMade = false;
 
     if (user.emailAddress != emailAddress) {
+      //only normal email accounts should be able to change email address
+      if (user.provider !== "email") {
+        return {
+          stat: false,
+          message: "password change is not available for social account",
+        };
+      }
+
       isChangeMade = true;
 
       //check if email exist....
@@ -155,7 +157,17 @@ export async function changePassword(
 
   try {
     const user = await getUser({ user_uuid }, false);
-    if (!user) return { stat: false, message: "user not found" };
+    if (!user) return { stat: false, message: "not found" };
+
+    if (user.user_uuid !== user_uuid) return { stat: false, message: "denied" };
+
+    //only users with normal email login can change password
+    if (user.provider !== "email") {
+      return {
+        stat: false,
+        message: "password change is not available for social account",
+      };
+    }
 
     const isPasswordCorrect = await bcryptjs.compare(
       oldPassword,
@@ -188,6 +200,14 @@ export async function resetPassword(
     const user = await getUser({ passwordResetToken });
     if (!user) return { stat: false, message: "invalid token" }; //invalid reset token
 
+    //only normal email account can reset password
+    if (user.provider !== "email") {
+      return {
+        stat: false,
+        message: "password change is not available for social account",
+      }; //how did you even get here...hmm
+    }
+
     //check if token is expired
     const expiryTime = new Date(user.passwordResetTokenExpiry).getTime();
     const currentTime = new Date().getTime();
@@ -214,6 +234,14 @@ export async function sendPasswordResetMail(emailAddress: string) {
     const user = await getUser({ emailAddress });
     if (!user) return { stat: false, message: "user not found" }; //invalid reset token
 
+    //only normal email account can reset password
+    if (user.provider !== "email") {
+      return {
+        stat: false,
+        message: "password change is not available for social account",
+      };
+    }
+
     let token;
 
     if (user.passwordResetToken) {
@@ -225,20 +253,28 @@ export async function sendPasswordResetMail(emailAddress: string) {
       if (currentTime >= expiryTime) {
         //expired..
         //create new token and update the db!
-        token = passwordResetTokenid();
+        token = generateRandomString(20);
 
         await db.query(
           `UPDATE user set passwordResetToken = ?, passwordResetTokenExpiry = ? WHERE user_uuid = ?`,
-          [token, new Date(Date.now() + tokenValidity), user.user_uuid]
+          [
+            token,
+            new Date(Date.now() + config.passwordResetTokenValidity),
+            user.user_uuid,
+          ]
         );
       } else token = user.passwordResetToken;
     } else {
       //create a new token and update the db!
-      token = passwordResetTokenid();
+      token = generateRandomString(20);
 
       await db.query(
         `UPDATE user set passwordResetToken = ?, passwordResetTokenExpiry = ? WHERE user_uuid = ?`,
-        [token, new Date(Date.now() + tokenValidity), user.user_uuid]
+        [
+          token,
+          new Date(Date.now() + config.passwordResetTokenValidity),
+          user.user_uuid,
+        ]
       );
     }
 
@@ -314,7 +350,7 @@ export async function getOrCreateUserFromSocialProvider(
         provider,
         providerUserId,
         profileImageURL,
-        `${provider}_user_${nanoid()}`,
+        `${provider}_user_${generateRandomString(10)}`,
       ]
     );
 

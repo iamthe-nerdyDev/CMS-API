@@ -37,6 +37,7 @@ export const config: IConfig = {
   saltWorkFactor: 10,
   refreshTokenToLive: "1y",
   accessTokenToLive: "5m",
+  passwordResetTokenValidity: 24 * 60 * 60 * 1000, //24 hours...
   jwt_secret: process.env.JWT_SECRET_TOKEN || "xxxx-test-xxxx",
   base_url: process.env.BASE_SERVER_URL || `http://localhost:${SERVER_PORT}`,
   client_url: process.env.BASE_CLIENT_URL || "",

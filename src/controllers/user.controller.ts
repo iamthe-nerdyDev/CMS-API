@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import log from "../utils/logger";
-
 import {
   changePassword,
   createUser,
@@ -10,7 +9,6 @@ import {
   resetPassword,
   sendPasswordResetMail,
 } from "../services/user.service";
-
 import {
   ChangePassword,
   CreateUser,
@@ -46,12 +44,13 @@ async function editUserHanlder(
     const response = await editUser(user_uuid, req.body);
 
     if (!response.stat) {
-      if (response.message == "user not found") return res.sendStatus(404);
+      if (response.message == "not found") return res.sendStatus(404);
+      if (response.message == "denied") return res.sendStatus(403);
 
-      return res.status(409).send(response.message);
+      return res.status(200).json({ status: false, message: response.message });
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -68,12 +67,13 @@ async function changePasswordHanlder(
     const response = await changePassword(user_uuid, req.body);
 
     if (!response.stat) {
-      if (response.message == "user not found") return res.sendStatus(404);
+      if (response.message == "not found") return res.sendStatus(404);
+      if (response.message == "denied") return res.sendStatus(403);
 
-      return res.status(409).send(response.message);
+      return res.status(200).json({ status: false, message: response.message });
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -121,12 +121,12 @@ async function forgotPasswordHanlder(
     const response = await sendPasswordResetMail(email);
 
     if (!response.stat) {
-      if (response.message == "user not found") return res.sendStatus(404);
+      if (response.message == "not found") return res.sendStatus(404);
 
       return res.status(200).json({ status: false, message: response.message });
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);
@@ -150,10 +150,10 @@ async function resetPasswordHanlder(
         return res.sendStatus(404);
       }
 
-      return res.status(409).send(response.message);
+      return res.status(200).json({ status: false, message: response.message });
     }
 
-    return res.status(201).json({ status: true, message: response.message });
+    return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
     return res.status(500).send(e.message);

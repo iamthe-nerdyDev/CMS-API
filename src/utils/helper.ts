@@ -1,4 +1,6 @@
 import { customAlphabet } from "nanoid";
+import bcryptjs from "bcryptjs";
+import { config } from "../config";
 
 export function stringToSlug(str: string) {
   return str
@@ -16,4 +18,11 @@ export function generateRandomString(length: number = 10) {
   );
 
   return nanoid();
+}
+
+export async function hashPassword(clientPassword: string) {
+  const salt = await bcryptjs.genSalt(config.saltWorkFactor);
+  const hashedPassword = await bcryptjs.hash(clientPassword, salt);
+
+  return hashedPassword;
 }

@@ -22,17 +22,10 @@ export interface IConfig {
   saltWorkFactor: number;
   refreshTokenToLive: string;
   accessTokenToLive: string;
+  passwordResetTokenValidity: number;
   jwt_secret: string;
   base_url: string;
   client_url: string;
-}
-
-export interface GetUserFn {
-  user_uuid?: string;
-  id?: number;
-  emailAddress?: string;
-  passwordResetToken?: string;
-  providerUserId?: string;
 }
 
 export interface SendMailParams {
