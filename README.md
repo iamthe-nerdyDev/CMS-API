@@ -2,6 +2,8 @@
 
 This was built using `Express + TypeScript`
 
+**NOTE:** For usage with postman, you can check for `CMS-API.postman_collection.json` file. Import it and get right into business.
+
 ## 💻 Installation and Setup
 
 Clone down this repository. You will need `node` and `npm` installed globally on your machine.
