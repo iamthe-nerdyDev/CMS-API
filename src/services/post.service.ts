@@ -3,7 +3,7 @@ import { config } from "../config";
 import { getPostsCount } from "../utils/counter";
 import { CreatePost, EditPost } from "../schema/post.schema";
 import { generateRandomString, stringToSlug } from "../utils/helper";
-import { isArray } from "lodash";
+import { isArray, omit } from "lodash";
 import { getCategory } from "./category.service";
 import { getUser } from "./user.service";
 
@@ -18,7 +18,7 @@ export async function createPost(user_uuid: string, data: CreatePost["body"]) {
 
     const response = await db.query<ResultSetHeader>(
       `
-      INSERT INTO post (title, slug, uuid, categoryId, featuredImageURL, body) 
+      INSERT INTO post (title, slug, user_uuid, categoryId, featuredImageURL, body) 
       VALUES(?, ?, ?, ?, ?, ?)
       `,
       [
@@ -125,7 +125,7 @@ export async function getPost(
 
     if (!post || Object.keys(post).length === 0) return undefined;
 
-    if (populate) return populatePost(post);
+    if (populate) return await populatePost(post);
     else return post;
   } catch (e: any) {
     throw new Error(e);
@@ -152,7 +152,12 @@ export async function getPosts(
         [param.user_uuid, param.categoryId, skip, limit]
       );
 
-      return { page, limit, total, data: rows };
+      return {
+        page,
+        limit,
+        total,
+        data: populate ? await populatePost(rows) : rows,
+      };
     }
 
     const [rows] = await db.query<RowDataPacket[]>(
@@ -160,7 +165,12 @@ export async function getPosts(
       [skip, limit]
     );
 
-    return { page, limit, total, data: populate ? populatePost(rows) : rows };
+    return {
+      page,
+      limit,
+      total,
+      data: populate ? await populatePost(rows) : rows,
+    };
   } catch (e: any) {
     throw new Error(e);
   }
@@ -170,14 +180,40 @@ async function populatePost(post: any) {
   if (!post) return post;
 
   if (isArray(post)) {
-    post.map(async (_post) => {
-      _post.categoryId = await getCategory({ id: _post.categoryId as number });
-      _post.user_uuid = await getUser({ user_uuid: _post.user_uuid as string });
+    const promises = post.map(async (_post) => {
+      let [category, user] = await Promise.all([
+        getCategory({ id: _post.categoryId }),
+        getUser({ user_uuid: _post.user_uuid }),
+      ]);
+
+      const _newPost = omit(_post, "categoryId", "user_uuid");
+
+      user = omit(
+        user,
+        "provider",
+        "providerUserId",
+        "passwordResetToken",
+        "passwordResetTokenExpiry"
+      ); //so as not to release unnecssary document to API
+
+      return { ..._newPost, category, user };
     });
-  } else {
-    post.categoryId = await getCategory({ id: post.categoryId as number });
-    post.user_uuid = await getUser({ user_uuid: post.user_uuid as string });
+
+    return Promise.all(promises);
   }
 
-  return post;
+  let category = await getCategory({ id: post.categoryId as number });
+  let user = await getUser({ user_uuid: post.user_uuid as string });
+
+  user = omit(
+    user,
+    "provider",
+    "providerUserId",
+    "passwordResetToken",
+    "passwordResetTokenExpiry"
+  ); //so as not to release unnecssary document to API
+
+  const _newPost = omit(post, "categoryId", "user_uuid");
+
+  return { ..._newPost, category, user };
 }

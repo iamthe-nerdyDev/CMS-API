@@ -23,6 +23,8 @@ async function deleteSessionHandler(_: Request, res: Response) {
 
     if (!response) return res.sendStatus(409);
 
+    res.setHeader("x-access-token", "xxxx"); //to trigger deletion of access and refresh token
+
     return res
       .status(200)
       .json({ status: true, accessToken: null, refreshToken: null });
