@@ -324,3 +324,11 @@ For user to access this routes, they are meant to be logged in and be issued an 
 The `accessToken` should be used in the Authorization header, i.e `Bearer: ${accessToken}`
 
 The `refreshToken` on the other hand, should be set as the value of the `x-refresh` header
+
+1.  /api/v1/user/edit-user
+2.  /api/v1/user/change-password
+3.  /api/v1/post **(POST)**
+4.  /api/v1/post/:postId **(PUT)**
+5.  /api/v1/post/:postId **(DELETE)**
+6.  /api/v1/session **(GET)**
+7.  /api/v1/session **(DELETE)**
