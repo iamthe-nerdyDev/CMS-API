@@ -11,6 +11,7 @@ import { omit } from "lodash";
 import { getUsersCount } from "../utils/counter";
 import { sendMail } from "../utils/nodemailer";
 import { generateRandomString, hashPassword } from "../utils/helper";
+import { broadcastEvent } from "../utils/socket";
 
 const db = config.db;
 
@@ -354,7 +355,18 @@ export async function getOrCreateUserFromSocialProvider(
       ]
     );
 
-    output.user = await getUser({ id: response[0].insertId });
+    const user = await getUser({ id: response[0].insertId });
+    output.user = user;
+
+    broadcastEvent({
+      target: "user",
+      action: "create",
+      data: {
+        id: response[0].insertId,
+        user_uuid: user!.user_uuid,
+        provider,
+      },
+    });
 
     return output;
   } catch (e: any) {
