@@ -33,14 +33,14 @@ router.put(
   controller.editUserHanlder
 );
 
-router.patch(
+router.put(
   "/change-password",
   [protectRoute, validate(changePasswordSchema)],
   controller.changePasswordHanlder
 );
 
-router.patch(
-  "/forgot-password",
+router.get(
+  "/forgot-password/:email",
   validate(forgotPasswordSchema),
   controller.forgotPasswordHanlder
 );

@@ -33,7 +33,7 @@ CREATE TABLE `user` (
   `password` VARCHAR(255) NULL,
   `provider` ENUM('google', 'twitter', 'facebook', 'email') NOT NULL DEFAULT 'email',
   `providerUserId` VARCHAR(255) NULL,
-  `passwordResetToken` VARCHAR(10) NULL,
+  `passwordResetToken` VARCHAR(20) NULL,
   `passwordResetTokenExpiry` TIMESTAMP NULL,
   `updatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
