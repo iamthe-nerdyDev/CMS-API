@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config";
+import { get } from "lodash";
 
 const jwtSecret = config.jwt_secret;
 
@@ -10,13 +11,19 @@ export function signJWT(object: Object, options?: jwt.SignOptions) {
   });
 }
 
-export function verifyJWT(token: string) {
+export function verifyJWT(token: string): {
+  valid: boolean;
+  expired?: boolean;
+  decoded?: jwt.JwtPayload;
+} {
   const decoded = jwt.decode(token) as jwt.JwtPayload;
   if (!decoded) return { valid: false }; //an invalid token passed
 
   const currentTime = Math.floor(new Date().getTime() / 1000);
 
-  if (decoded.exp! <= currentTime) return { valid: false, expired: true };
+  if (get(decoded, "exp")! <= currentTime) {
+    return { valid: false, expired: true };
+  }
 
   return { valid: true, expired: false, decoded };
 }
