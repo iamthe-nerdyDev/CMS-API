@@ -13,6 +13,7 @@ import {
   getCategory,
 } from "../services/category.service";
 import log from "../utils/logger";
+import { broadcastEvent } from "../utils/socket";
 
 async function createCategoryHandler(
   req: Request<{}, {}, CreateCategory["body"]>,
@@ -20,6 +21,14 @@ async function createCategoryHandler(
 ) {
   try {
     const category = await createCategory(req.body.name);
+
+    broadcastEvent({
+      target: "category",
+      action: "create",
+      data: {
+        id: category!.id,
+      },
+    });
 
     return res.status(201).json({ status: true, data: category });
   } catch (e: any) {
@@ -44,6 +53,14 @@ async function editCategoryHandler(
 
       return res.status(409).send(response.message);
     }
+
+    broadcastEvent({
+      target: "category",
+      action: "update",
+      data: {
+        id: parseInt(categoryId),
+      },
+    });
 
     return res.sendStatus(204);
   } catch (e: any) {
@@ -101,6 +118,14 @@ async function deleteCategoryHandler(
     const response = await deleteCategory(parseInt(categoryId));
 
     if (!response) return res.sendStatus(409);
+
+    broadcastEvent({
+      target: "category",
+      action: "delete",
+      data: {
+        id: parseInt(categoryId),
+      },
+    });
 
     return res.sendStatus(204);
   } catch (e: any) {
