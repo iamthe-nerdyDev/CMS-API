@@ -12,7 +12,6 @@ import {
 import protectRoute from "../middleware/protectRoute";
 import passport from "passport";
 import passportController from "../controllers/passport.controller";
-import sessionController from "../controllers/session.conntroller";
 import { loginLocalSchema } from "../schema/session.schema";
 
 const router = express.Router();
@@ -75,8 +74,5 @@ router.post(
   validate(loginLocalSchema),
   passportController.loginLocal
 );
-/** Session routes */
-router.get("/session", protectRoute, sessionController.getSessionsHandler);
-router.delete("/session", protectRoute, sessionController.deleteSessionHandler);
 
 export = router;
