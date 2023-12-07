@@ -18,15 +18,10 @@ export const createUserSchema = object({
     passwordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine(
-    (data) => {
-      data.password === data.passwordConfirmation;
-    },
-    {
-      message: "Passwords do not match",
-      path: ["passwordConfirmation"],
-    }
-  ),
+  }).refine((data) => data.password === data.passwordConfirmation, {
+    message: "Passwords do not match",
+    path: ["passwordConfirmation"],
+  }),
 });
 
 /** Editing user schema */
@@ -56,15 +51,10 @@ export const changePasswordSchema = object({
     newPasswordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine(
-    (data) => {
-      data.newPassword === data.newPasswordConfirmation;
-    },
-    {
-      message: "Passwords do not match",
-      path: ["newPasswordConfirmation"],
-    }
-  ),
+  }).refine((data) => data.newPassword === data.newPasswordConfirmation, {
+    message: "Passwords do not match",
+    path: ["newPasswordConfirmation"],
+  }),
 });
 
 /** Get single user schema */
@@ -106,15 +96,10 @@ export const resetPasswordSchema = object({
     passwordConfirmation: string({
       required_error: "Password confirmation is required",
     }),
-  }).refine(
-    (data) => {
-      data.password === data.passwordConfirmation;
-    },
-    {
-      message: "Passwords do not match",
-      path: ["passwordConfirmation"],
-    }
-  ),
+  }).refine((data) => data.password === data.passwordConfirmation, {
+    message: "Passwords do not match",
+    path: ["passwordConfirmation"],
+  }),
 });
 
 /** Exporting the schema types */
