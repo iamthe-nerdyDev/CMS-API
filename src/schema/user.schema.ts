@@ -62,14 +62,9 @@ export const getUserSchema = object({
   params: object({
     user_uuid: string({
       required_error: "user_uuid is required",
-    }).refine(
-      (value) => {
-        /^[a-zA-Z0-9]+_user_[a-zA-Z0-9]{10}$/.test(value);
-      },
-      {
-        message: "Invalid user_uuid format",
-      }
-    ),
+    }).refine((value) => /^[a-zA-Z0-9]+_user_[a-zA-Z0-9]{10}$/.test(value), {
+      message: "Invalid user_uuid format",
+    }),
   }),
 });
 

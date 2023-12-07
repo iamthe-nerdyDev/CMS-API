@@ -1,4 +1,4 @@
-import { object, string, TypeOf } from "zod";
+import { object, string } from "zod";
 
 export const loginLocalSchema = object({
   body: object({
