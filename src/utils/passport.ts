@@ -4,7 +4,6 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 import { OAuth2Strategy as GoogleStrategy } from "passport-google-oauth";
 import { Strategy as TwitterStrategy } from "passport-twitter";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Strategy as JWTStrategy, ExtractJwt } from "passport-jwt";
 import { config } from "../config";
 import {
   getOrCreateUserFromSocialProvider,
@@ -40,24 +39,6 @@ function initPassport(app: Express) {
   if (!config.passport.x.clientSecret) {
     throw new Error("missing .env variable: X_CLIENT_SECRET");
   }
-
-  passport.use(
-    "jwt",
-    new JWTStrategy(
-      {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: config.jwt_secret,
-      },
-      async function (jwtPayload, done) {
-        const user_uuid = jwtPayload.user_uuid;
-
-        const user = await getUser({ user_uuid });
-
-        //TODO: get stuffs from db and pass it as the jwtPayload in the done fnn
-        return done(null, user);
-      }
-    )
-  );
 
   //for login with email and password
   passport.use(

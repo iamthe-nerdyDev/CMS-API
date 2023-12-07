@@ -1,7 +1,6 @@
 import express from "express";
 import validate from "../middleware/validateSchema";
 import controller from "../controllers/user.controller";
-
 import {
   changePasswordSchema,
   createUserSchema,
@@ -10,11 +9,11 @@ import {
   getUserSchema,
   resetPasswordSchema,
 } from "../schema/user.schema";
-
 import protectRoute from "../middleware/protectRoute";
 import passport from "passport";
 import passportController from "../controllers/passport.controller";
 import sessionController from "../controllers/session.conntroller";
+import { loginLocalSchema } from "../schema/session.schema";
 
 const router = express.Router();
 
@@ -71,8 +70,11 @@ router.get(
 router.get("/login/callback/google", passportController.loginGoogle);
 
 //normal login
-router.post("/login", passportController.loginLocal);
-
+router.post(
+  "/login",
+  validate(loginLocalSchema),
+  passportController.loginLocal
+);
 /** Session routes */
 router.get("/session", protectRoute, sessionController.getSessionsHandler);
 router.delete("/session", protectRoute, sessionController.deleteSessionHandler);

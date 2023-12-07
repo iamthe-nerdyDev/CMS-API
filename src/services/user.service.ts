@@ -279,7 +279,7 @@ export async function getOrCreateUserFromSocialProvider(
 ) {
   try {
     const output: { user: any; error?: string } = {
-      user: {},
+      user: null,
       error: undefined,
     };
 
@@ -294,7 +294,7 @@ export async function getOrCreateUserFromSocialProvider(
 
     //trying to register a new user
     //check if the email address is not used to create another account
-    const doesEmailExist = await getUser({ providerUserId });
+    const doesEmailExist = await getUser({ emailAddress });
     if (doesEmailExist) {
       output.error = `This email is already linked to a user with a ${doesEmailExist.provider} account`;
 
