@@ -35,7 +35,7 @@ export interface SendMailParams {
 }
 
 export interface IEmit {
-  target: "category" | "user" | "post";
+  target: "category" | "user" | "post" | "session";
   action: "create" | "update" | "delete";
   data: {
     id?: number | string;

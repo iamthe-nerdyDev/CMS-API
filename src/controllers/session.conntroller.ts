@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import log from "../utils/logger";
 import { deleteSession, getSessions } from "../services/session.service";
+import { broadcastEvent } from "../utils/socket";
 
 async function getSessionsHandler(_: Request, res: Response) {
   const { user_uuid } = res.locals.user;
@@ -24,6 +25,15 @@ async function deleteSessionHandler(_: Request, res: Response) {
     if (!response) return res.sendStatus(409);
 
     res.setHeader("x-access-token", "xxxx"); //to trigger deletion of access and refresh token
+
+    broadcastEvent({
+      target: "session",
+      action: "delete",
+      data: {
+        session,
+        user_uuid,
+      },
+    });
 
     return res
       .status(200)
