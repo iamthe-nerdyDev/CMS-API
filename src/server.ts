@@ -1,10 +1,20 @@
-import http from "http";
+import httpServer from "./utils/httpServer";
 import { config } from "./config";
-import createServer from "./utils/app";
+import { Server, Socket } from "socket.io";
 import log from "./utils/logger";
 
-const app = createServer();
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+  },
+});
 
-http.createServer(app).listen(config.server.port, () => {
+io.on("connection", (socket: Socket) => {
+  log.info(`New connection to socket ✅: ${socket.id}`);
+
+  socket.on("response", (data) => socket.broadcast.emit("response", data));
+});
+
+httpServer.listen(config.server.port, () => {
   log.info(`Server is running on port: ${config.server.port}`);
 });
