@@ -1,0 +1,1072 @@
+{
+	"info": {
+		"_postman_id": "cbff0ad6-51e7-4d84-9ba5-09c48cdc6fa2",
+		"name": "CMS API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31184600"
+	},
+	"item": [
+		{
+			"name": "Category",
+			"item": [
+				{
+					"name": "Get categories",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "limit",
+								"value": "{{limit}}",
+								"description": "optional",
+								"type": "text"
+							},
+							{
+								"key": "page",
+								"value": "{{page}}",
+								"description": "optional",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/category",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get category from slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/category/:param",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category",
+								":param"
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{categorySlug}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get category from category id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/category/:param",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category",
+								":param"
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{categoryId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData && jsonData.data) {",
+									"    var categoryIteration = pm.collectionVariables.get(",
+									"        \"categoryIteration\"",
+									"    );",
+									"",
+									"    pm.collectionVariables.set(",
+									"        \"categoryIteration\",",
+									"        parseInt(categoryIteration) + 1",
+									"    );",
+									"",
+									"    //setting the categoryId and categorySlug",
+									"    pm.collectionVariables.set(\"categoryId\", jsonData.data.id);",
+									"    pm.collectionVariables.set(\"categorySlug\", jsonData.data.slug);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Testing Category - {{categoryIteration}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/category",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Title - {{categoryIteration}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/category/:categoryId",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category",
+								":categoryId"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": "{{categoryId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/category/:categoryId",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"category",
+								":categoryId"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": "{{categoryId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Session",
+					"item": [
+						{
+							"name": "Get logged in user sessions",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-refresh",
+										"value": "{{refreshToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{endpoint}}/session",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"session"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Clear logged in session",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "x-refresh",
+										"value": "{{refreshToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{endpoint}}/session",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"session"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"item": [
+						{
+							"name": "Normal email login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{emailAddress}}\",\n    \"password\": \"m123456789\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{endpoint}}/user/login",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"user",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Google login",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{endpoint}}/user/login/google",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"user",
+										"login",
+										"google"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Twitter login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{endpoint}}/user/login/twitter",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"user",
+										"login",
+										"twitter"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Facebook login",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{endpoint}}/user/login/facebook",
+									"host": [
+										"{{endpoint}}"
+									],
+									"path": [
+										"user",
+										"login",
+										"facebook"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData) {",
+									"    //any login you do will return a access & refresh token",
+									"    pm.collectionVariables.set(",
+									"        \"accessToken\",",
+									"        jsonData.accessToken",
+									"    );",
+									"",
+									"    pm.collectionVariables.set(",
+									"        \"refreshToken\",",
+									"        jsonData.refreshToken",
+									"    );",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Register user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData && jsonData.data) {",
+									"    var userIteration = pm.collectionVariables.get(",
+									"        \"userIteration\"",
+									"    );",
+									"",
+									"    pm.collectionVariables.set(",
+									"        \"userIteration\",",
+									"        parseInt(userIteration) + 1",
+									"    );",
+									"",
+									"    pm.collectionVariables.set(\"user_uuid\", jsonData.data.user_uuid);",
+									"    pm.collectionVariables.set(",
+									"        \"emailAddress\",",
+									"        jsonData.data.emailAddress",
+									"    );",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emailAddress\": \"test-{{userIteration}}@email.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"password\": \"m123456789\",\n    \"passwordConfirmation\": \"m123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/user/register",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/user?limit={{limit}}&page={{page}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{limit}}",
+									"description": "optional"
+								},
+								{
+									"key": "page",
+									"value": "{{page}}",
+									"description": "optional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/user/:user_uuid",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								":user_uuid"
+							],
+							"variable": [
+								{
+									"key": "user_uuid",
+									"value": "{{user_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit logged in user",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emailAddress\": \"test-updated-{{userIteration}}@email.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/user/edit-user",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								"edit-user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change logged in user password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"oldPassword\": \"123456789\",\n    \"newPasswordd\": \"updated-123456789\",\n    \"newPasswordConfirmation\": \"updated-123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/user/change-password",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								"change-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot password",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/user/forgot-password/:email",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								"forgot-password",
+								":email"
+							],
+							"variable": [
+								{
+									"key": "email",
+									"value": "{{emailAddress}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"new-123456789\",\n    \"passwordConfirmation\": \"new-123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/user/reset-password/:passwordResetToken",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"user",
+								"reset-password",
+								":passwordResetToken"
+							],
+							"variable": [
+								{
+									"key": "passwordResetToken",
+									"value": "get-it-from-mail"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Post",
+			"item": [
+				{
+					"name": "Get all posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post?limit={{limit}}&page={{page}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{limit}}",
+									"description": "optional"
+								},
+								{
+									"key": "page",
+									"value": "{{page}}",
+									"description": "optional"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get users post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post/:param?limit={{limit}}&page={{page}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								":param"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{limit}}",
+									"description": "optional"
+								},
+								{
+									"key": "page",
+									"value": "{{page}}",
+									"description": "optional"
+								}
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{user_uuid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get posts under category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post/:param?limit={{limit}}&page={{page}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								":param"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{limit}}",
+									"description": "optional"
+								},
+								{
+									"key": "page",
+									"value": "{{page}}",
+									"description": "optional"
+								}
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{categoryId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create post",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData && jsonData.data) {",
+									"    var postIteration = pm.collectionVariables.get(",
+									"        \"postIteration\"",
+									"    );",
+									"",
+									"    pm.collectionVariables.set(",
+									"        \"postIteration\",",
+									"        parseInt(postIteration) + 1",
+									"    );",
+									"",
+									"    //setting the postId and postSlug",
+									"    pm.collectionVariables.set(\"postId\", jsonData.data.id);",
+									"    pm.collectionVariables.set(\"postSlug\", jsonData.data.slug);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryId\": {{categoryId}},\n    \"title\": \"Basic testing post title - {{postIteration}}\",\n    \"featuredImageURL\": \"https://iili.io/J9qUoWG.png\",\n    \"body\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/post",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get post from slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post/single/:param",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								"single",
+								":param"
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{postSlug}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get post from postId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post/single/:param",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								"single",
+								":param"
+							],
+							"variable": [
+								{
+									"key": "param",
+									"value": "{{postId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit post of logged in user",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryId\": {{categoryId}},\n    \"title\": \"Basic testing post title [updated] - {{postIteration}}\",\n    \"featuredImageURL\": \"https://iili.io/J9qUoWG.png\",\n    \"body\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/post/:postId",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "{{postId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete post",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/post/:postId",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"post",
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "{{postId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const newAccessToken = responseHeaders['x-access-token'];",
+					"",
+					"if (newAccessToken) {",
+					"    if (newAccessToken == \"xxxx\") {",
+					"        pm.collectionVariables.set(\"accessToken\", \"undefined\");",
+					"        pm.collectionVariables.set(\"refreshToken\", \"undefined\");",
+					"    } else {",
+					"        console.log('Set new access token');",
+					"",
+					"        pm.collectionVariables.set(\"accessToken\", newAccessToken);",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "endpoint",
+			"value": "http://localhost:1337/api/v1"
+		},
+		{
+			"key": "accessToken",
+			"value": "undefined"
+		},
+		{
+			"key": "refreshToken",
+			"value": "undefined"
+		},
+		{
+			"key": "limit",
+			"value": "10",
+			"type": "string"
+		},
+		{
+			"key": "page",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "categorySlug",
+			"value": "undefined",
+			"type": "string"
+		},
+		{
+			"key": "categoryId",
+			"value": "undefined",
+			"type": "string"
+		},
+		{
+			"key": "categoryIteration",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "userIteration",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "user_uuid",
+			"value": "undefined",
+			"type": "string"
+		},
+		{
+			"key": "emailAddress",
+			"value": "undefined",
+			"type": "string"
+		},
+		{
+			"key": "postIteration",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "postId",
+			"value": "undefined",
+			"type": "string"
+		},
+		{
+			"key": "postSlug",
+			"value": "undefined",
+			"type": "string"
+		}
+	]
+}
