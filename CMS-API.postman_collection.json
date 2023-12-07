@@ -957,6 +957,23 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Healthcheck",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{endpoint}}/healthcheck",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
