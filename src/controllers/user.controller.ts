@@ -17,6 +17,7 @@ import {
   GetUser,
   ResetPassword,
 } from "../schema/user.schema";
+import { broadcastEvent } from "../utils/socket";
 
 async function createUserHanlder(
   req: Request<{}, {}, CreateUser["body"]>,
@@ -26,6 +27,15 @@ async function createUserHanlder(
     const user = await createUser(req.body);
 
     if (!user) return res.status(409).send("Email address already exist");
+
+    broadcastEvent({
+      target: "user",
+      action: "create",
+      data: {
+        id: user!.id,
+        user_uuid: user!.user.user_uuid,
+      },
+    });
 
     return res.status(201).json({ status: true, data: user });
   } catch (e: any) {
@@ -50,6 +60,14 @@ async function editUserHanlder(
       return res.status(200).json({ status: false, message: response.message });
     }
 
+    broadcastEvent({
+      target: "user",
+      action: "update",
+      data: {
+        user_uuid: user_uuid,
+      },
+    });
+
     return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
@@ -72,6 +90,15 @@ async function changePasswordHanlder(
 
       return res.status(200).json({ status: false, message: response.message });
     }
+
+    broadcastEvent({
+      target: "user",
+      action: "update",
+      data: {
+        user_uuid: user_uuid,
+        sub: "change-password",
+      },
+    });
 
     return res.sendStatus(204);
   } catch (e: any) {
@@ -126,6 +153,15 @@ async function forgotPasswordHanlder(
       return res.status(200).json({ status: false, message: response.message });
     }
 
+    broadcastEvent({
+      target: "user",
+      action: "update",
+      data: {
+        sub: "forgot-password",
+        email,
+      },
+    });
+
     return res.sendStatus(204);
   } catch (e: any) {
     log.error(e);
@@ -149,6 +185,15 @@ async function resetPasswordHanlder(
       ) {
         return res.sendStatus(404);
       }
+
+      broadcastEvent({
+        target: "user",
+        action: "update",
+        data: {
+          sub: "reset-password",
+          passwordResetToken,
+        },
+      });
 
       return res.status(200).json({ status: false, message: response.message });
     }
