@@ -38,7 +38,7 @@ export interface IEmit {
   target: "category" | "user" | "post";
   action: "create" | "update" | "delete";
   data: {
-    id: number;
+    id?: number | string;
     [key: string]: any;
   };
 }
