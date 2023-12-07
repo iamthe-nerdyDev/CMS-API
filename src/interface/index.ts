@@ -33,3 +33,12 @@ export interface SendMailParams {
   subject: string;
   html: string;
 }
+
+export interface IEmit {
+  target: "category" | "user" | "post";
+  action: "create" | "update" | "delete";
+  data: {
+    id: number;
+    [key: string]: any;
+  };
+}
