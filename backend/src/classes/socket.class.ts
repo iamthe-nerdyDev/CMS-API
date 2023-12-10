@@ -10,9 +10,12 @@ class Socket {
     this.socket = io(config.base_url);
 
     this.socket.on("connection", () => log.info("Connected 🔌"));
+    this.socket.on("disconnect", () => log.info("Disconnected ❌"));
   }
 
   emit = (data: IEmit) => this.socket.emit("response", data);
+
+  close = () => (this.socket.connected ? this.socket.disconnect() : false);
 }
 
 export default Socket;
